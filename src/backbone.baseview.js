@@ -6,16 +6,17 @@ const BaseView = Backbone.View.extend({
     if (options.template) {
       this.template = options.template;
     }
-    this._children = {};
-    this._super.apply(this, arguments);
+    Backbone.View.apply(this, arguments);
   },
 
   $(selector) {
-    this._querySelector(selector);
+    return Backbone.$(this._querySelector(selector));
   },
 
   compile() {
-    if (!this.template) return;
+    if (!this.template) {
+      return;
+    }
     var data = this.serializeData();
     return this.template(data);
   },
@@ -30,7 +31,7 @@ const BaseView = Backbone.View.extend({
       return this;
     }
 
-    var parentNode = this._getParentEl();
+    var parentNode = this._getParentNode();
     var nextSibling = this._getNextSibling();
     if (parentNode && this._isAttached) {
       this.detach();
@@ -60,20 +61,8 @@ const BaseView = Backbone.View.extend({
     } else {
       this._appendChild(parentNode);
     }
-    this.attachChildren();
     this._isAttached = true;
     this.trigger('attach');
-    return this;
-  },
-
-  attachChild(region, view) {
-    var el = this._querySelector(this.el, this._regions[region]);
-    view.attach(el);
-    return this;
-  },
-
-  attachChildren() {
-    _.each(this._children, (view, region) => this.attachChild(region, view));
     return this;
   },
 
@@ -85,19 +74,8 @@ const BaseView = Backbone.View.extend({
       return this;
     }
     this._detach();
-    this.detachChildren();
     this._isAttached = false;
     this.trigger('detach');
-    return this;
-  },
-
-  detachChild(region, view) {
-    view.detach();
-    return this;
-  },
-
-  detachChildren() {
-    _.each(this._children, (view, region) => this.detachChild(regiom, view));
     return this;
   },
 
@@ -134,20 +112,6 @@ const BaseView = Backbone.View.extend({
     };
   },
 
-  insertChild(region, view) {
-    this._children[region] = view;
-    if (this._isRendered) {
-      this.attachChild(region, view);
-    }
-    if (!view._isRendered) {
-      view.render();
-    }
-  },
-
-  removeChild(region) {
-    this._children[region] = null;
-  },
-
   isRendered() {
     return this._isRendered === true;
   },
@@ -172,7 +136,7 @@ const BaseView = Backbone.View.extend({
     this.el.innerHTML = innerHTML;
   },
 
-  _getParentEl() {
+  _getParentNode() {
     return this.el.parentNode;
   },
 
@@ -193,11 +157,11 @@ const BaseView = Backbone.View.extend({
   },
 
   _remove() {
-    if (node.remove) {
-      node.remove();
+    if (this.el.remove) {
+      this.el.remove();
     } else {
-      var parentNode = this._getParentEl();
-      parentNode.removeChild(node);
+      var parentNode = this._getParentNode();
+      parentNode.removeChild(this.el);
     }
   }
 }, {

@@ -9,54 +9,28 @@ A simple BaseView for Backbone.
 [![devDependency Status](https://david-dm.org/thejameskyle/backbone.baseview/dev-status.svg)](https://david-dm.org/thejameskyle/backbone.baseview#info=devDependencies)
 
 ```js
+import _ from 'underscore';
+import Backbone from 'backbone';
 import BaseView from 'backbone.baseview';
 
-const LayoutView = BaseView.extend({
-  id: 'layout',
-
-  template() {
-    return `
-      <aside></aside>
-      <main></main>
-    `;
-  },
-
-  regions: {
-    sidebar: 'aside',
-    content: 'main'
-  }
+const MyView = BaseView.extend({
+  tagName: 'ul',
+  template: _.template(`
+    <% _.each(collection, function(model) { %>
+      <li><%- model.value %></li>
+    <% }); %>
+  `)
 });
 
-const SidebarView = BaseView.extend({
-  id: 'sidebar',
-  tagName: 'nav',
+const collection = new Backbone.Collection([
+  { value: 'One' },
+  { value: 'Two' },
+  { value: 'Three' }
+]);
 
-  template() {
-    return `
-      <a href="/">Home</a>
-      <a href="/about">About</a>
-      <a href="/contact">Contact</a>
-    `;
-  }
+const myView = new MyView({
+  collection: collection
 });
-
-const ContentView = BaseView.extend({
-  id: 'content',
-
-  template() {
-    return `
-      <h1>Hello World</h1>
-      <p>Look at this nice content.</p>
-    `;
-  }
-});
-
-const layoutView = new LayoutView();
-const sidebarView = new SidebarView();
-const contentView = new ContentView();
-
-layoutView.insertChild('sidebar', sidebarView);
-layoutView.insertChild('content', contentView);
 
 layoutView.render();
 layoutView.$el.appendTo(document.body);
